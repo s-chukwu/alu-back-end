@@ -1,36 +1,26 @@
 #!/usr/bin/python3
 """
-For a given employee ID, returns information about their TODO list progress.
-Usage: python3 0-gather_data_from_an_API.py <employee_id>
+Uses the REST API for a given employee ID to return
+information about their TODO list progress.
 """
 
 import requests
 import sys
 
+if __name__ == "__main__":
+    employee_id = sys.argv[1]
+    base = "https://jsonplaceholder.typicode.com"
 
-def get_employee_todo_progress(employee_id):
-    """Fetch and display TODO list progress for a given employee."""
-    base_url = "https://jsonplaceholder.typicode.com"
+    user = requests.get("{}/users/{}".format(base, employee_id)).json()
+    todos = requests.get(
+        "{}/todos?userId={}".format(base, employee_id)
+    ).json()
 
-    user_url = "{}/users/{}".format(base_url, employee_id)
-    user_data = requests.get(user_url).json()
-    employee_name = user_data.get("name")
-
-    todos_url = "{}/todos".format(base_url)
-    todos = requests.get(todos_url, params={"userId": employee_id}).json()
-
-    total_tasks = len(todos)
-    done_tasks = [task for task in todos if task.get("completed") is True]
-    number_of_done_tasks = len(done_tasks)
+    done = [t for t in todos if t.get("completed") is True]
 
     print("Employee {} is done with tasks({}/{}):".format(
-        employee_name, number_of_done_tasks, total_tasks
+        user.get("name"), len(done), len(todos)
     ))
 
-    for task in done_tasks:
+    for task in done:
         print("\t {}".format(task.get("title")))
-
-
-if __name__ == "__main__":
-    employee_id = int(sys.argv[1])
-    get_employee_todo_progress(employee_id)
