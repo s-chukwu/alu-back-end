@@ -19,13 +19,10 @@ if __name__ == "__main__":
         "{}/todos?userId={}".format(base, employee_id)
     ).json()
 
-    completed = []
-    for task in todos:
-        if task.get("completed") is True:
-            completed.append(task.get("title"))
+    completed = [t.get("title") for t in todos if t.get("completed")]
 
     print("Employee {} is done with tasks({}/{}):".format(
         user.get("name"), len(completed), len(todos)
     ))
 
-    print("\n".join("\t {}".format(title) for title in completed))
+    [print("\t {}".format(title)) for title in completed]
