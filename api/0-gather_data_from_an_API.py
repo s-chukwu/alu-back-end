@@ -3,49 +3,52 @@ import requests
 import sys
 
 
-def get_todo_progress(employee_id):
-    """Fetches and prints the TODO list progress for a specific employee ID."""
-    base_url = "https://typicode.com"
-
-    # Define targets for user data and task list endpoints
-    user_url = f"{base_url}/users/{employee_id}"
-    todos_url = f"{base_url}/todos?userId={employee_id}"
+def get_todo_progress():
+    """
+    Fetches and displays the progress of a specific employee's tasks.
+    """
+    # Check if an argument is provided
+    if len(sys.argv) < 2:
+        return
 
     try:
-        # Request employee details
-        user_response = requests.get(user_url)
-        if user_response.status_code != 200:
-            return
-        employee_name = user_response.json().get("name")
-
-        # Request complete todo list items
-        todos_response = requests.get(todos_url)
-        if todos_response.status_code != 200:
-            return
-        tasks = todos_response.json()
-
-        # Calculate task completions
-        total_tasks = len(tasks)
-        completed_tasks = [task for task in tasks if task.get("completed")]
-        number_of_done_tasks = len(completed_tasks)
-
-        # Print summary line matching the required formatting string
-        print(f"Employee {employee_name} is done with tasks"
-              f"({number_of_done_tasks}/{total_tasks}):")
-
-        # Print each completed title with 1 tab and 1 space layout
-        for task in completed_tasks:
-            print(f"\t {task.get('title')}")
-
-    except requests.RequestException:
+        # The employee ID is the first argument
+        employee_id = int(sys.argv[1])
+    except ValueError:
         return
+
+    # Base URL for the API
+    base_url = "https://jsonplaceholder.typicode.com/"
+
+    # Get employee information
+    user_url = "{}users/{}".format(base_url, employee_id)
+    user_response = requests.get(user_url)
+    user_data = user_response.json()
+    
+    # Extract employee name
+    employee_name = user_data.get("name")
+
+    # Get todo list for the employee
+    todos_url = "{}todos?userId={}".format(base_url, employee_id)
+    todos_response = requests.get(todos_url)
+    todos_data = todos_response.json()
+
+    # Filter completed tasks and count total tasks
+    completed_tasks = [task for task in todos_data if task.get("completed")]
+    total_tasks = len(todos_data)
+    number_of_done_tasks = len(completed_tasks)
+
+    # Print the summary line
+    print("Employee {} is done with tasks({}/{}):".format(
+        employee_name,
+        number_of_done_tasks,
+        total_tasks
+    ))
+
+    # Print the titles of completed tasks with required formatting
+    for task in completed_tasks:
+        print("\t {}".format(task.get("title")))
 
 
 if __name__ == "__main__":
-    # Ensure parameter exists prior to processing execution logic
-    if len(sys.argv) > 1:
-        try:
-            emp_id = int(sys.argv[1])
-            get_todo_progress(emp_id)
-        except ValueError:
-            pass
+    get_todo_progress()
