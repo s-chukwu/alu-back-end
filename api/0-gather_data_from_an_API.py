@@ -8,35 +8,37 @@ import sys
 
 
 if __name__ == "__main__":
-    # Base URL for the JSONPlaceholder API
+    # The API URL
     url = "https://jsonplaceholder.typicode.com/"
 
-    # Get the employee information using the ID provided as an argument
-    employee_id = sys.argv[1]
-    user_res = requests.get(url + "users/{}".format(employee_id))
-    user_data = user_res.json()
+    # Get user information - sys.argv[1] is the ID
+    user_url = "{}users/{}".format(url, sys.argv[1])
+    user_response = requests.get(user_url)
+    # The .json() method turns the response into a dictionary
+    user_data = user_response.json()
 
-    # Get the employee name
+    # Extract the name string directly
     employee_name = user_data.get("name")
 
-    # Get the TODO list for the employee
-    todo_res = requests.get(url + "todos", params={"userId": employee_id})
-    todo_data = todo_res.json()
+    # Get todos for the specific user
+    todos_url = "{}todos".format(url)
+    params = {"userId": sys.argv[1]}
+    todos_response = requests.get(todos_url, params=params)
+    todos_data = todos_response.json()
 
-    # Filter tasks that are completed
+    # Filter completed tasks and get titles
     completed_tasks = []
-    for task in todo_data:
+    for task in todos_data:
         if task.get("completed") is True:
             completed_tasks.append(task.get("title"))
 
-    # Calculate total number of tasks
-    total_tasks = len(todo_data)
-    done_tasks = len(completed_tasks)
-
-    # Print the first line in the required format
+    # Formatted output
     print("Employee {} is done with tasks({}/{}):".format(
-        employee_name, done_tasks, total_tasks))
+        employee_name,
+        len(completed_tasks),
+        len(todos_data)
+    ))
 
-    # Print each completed task title with one tab and one space
+    # Print tasks with 1 tab and 1 space
     for title in completed_tasks:
         print("\t {}".format(title))
