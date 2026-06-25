@@ -26,4 +26,3 @@ if __name__ == "__main__":
     ))
 
     [print("\t {}".format(title)) for title in completed]
-    
