@@ -5,22 +5,27 @@ information about their TODO list progress.
 """
 
 import requests
-import sys
+from sys import argv
 
 if __name__ == "__main__":
-    employee_id = sys.argv[1]
+    employee_id = argv[1]
     base = "https://jsonplaceholder.typicode.com"
 
-    user = requests.get("{}/users/{}".format(base, employee_id)).json()
+    user = requests.get(
+        "{}/users/{}".format(base, employee_id)
+    ).json()
+
     todos = requests.get(
         "{}/todos?userId={}".format(base, employee_id)
     ).json()
 
-    done = [t for t in todos if t.get("completed") is True]
+    completed = []
+    for task in todos:
+        if task.get("completed") is True:
+            completed.append(task.get("title"))
 
     print("Employee {} is done with tasks({}/{}):".format(
-        user.get("name"), len(done), len(todos)
+        user.get("name"), len(completed), len(todos)
     ))
 
-    for task in done:
-        print("\t {}".format(task.get("title")))
+    print("\n".join("\t {}".format(title) for title in completed))
