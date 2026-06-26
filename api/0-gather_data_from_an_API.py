@@ -1,34 +1,31 @@
 #!/usr/bin/python3
-"""Retrieve and display an employee's completed TODO tasks."""
+""" Library to gather data from an API. """
 
 import requests
 import sys
 
+""" Script to return a given employee ID
+together with their TODO list progress
+"""
 
 if __name__ == "__main__":
     employee_id = sys.argv[1]
-    api_url = "https://jsonplaceholder.typicode.com"
+    url = "https://jsonplaceholder.typicode.com/users/{}".format(employee_id)
 
-    employee = requests.get(
-        "{}/users/{}".format(api_url, employee_id)
-    ).json()
+    todo = "https://jsonplaceholder.typicode.com/todos?userId={}"
+    todo = todo.format(employee_id)
 
-    tasks = requests.get(
-        "{}/todos".format(api_url),
-        params={"userId": employee_id}
-    ).json()
+    user_info = requests.request("GET", url).json()
+    todo_info = requests.request("GET", todo).json()
 
-    completed_tasks = [
-        task for task in tasks if task.get("completed") is True
-    ]
+    employee_name = user_info.get("name")
+    total_tasks = list(filter(lambda x: (x["completed"] is True), todo_info))
+    task_com = len(total_tasks)
+    total_task_done = len(todo_info)
 
     print(
         "Employee {} is done with tasks({}/{}):".format(
-            employee.get("name"),
-            len(completed_tasks),
-            len(tasks)
+            employee_name, task_com, total_task_done
         )
     )
-
-    for task in completed_tasks:
-        print("\t {}".format(task.get("title")))
+    [print("\t {}".format(task.get("title"))) for task in total_tasks]
