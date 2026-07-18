@@ -1,80 +1,58 @@
 #!/usr/bin/python3
-""" module document """
+"""
+Script to get and display TODO list progress for an employee
+using a REST APIs
+
+"""
 
 import requests
 import sys
 
 
-def main():
-    """ def com """
-    id = sys.argv[1]
-    url = f'https://jsonplaceholder.typicode.com/'
-    users = f'users?id={id}'
-    todos = f'todos?userId={id}'
-    done = f'{todos}&completed=true'
-    notDone = f'{todos}&completed=false'
-    userData = requests.get(f'{url}{users}').json()
-    Name = userData[0].get("name")
-    todosData = requests.get(f'{url}{todos}').json()
-    todosDone = requests.get(f'{url}{done}').json()
-    doneN = len(todosDone)
-    totalN = len(todosData)
-    print(f'Employee {Name} is done with tasks({doneN}/{totalN}):')
-    for task in todosDone:
-        print("\t "+task.get("title"))
+def fetch_todo_progress(employee_id: int):
+    """ Fetches and displays TODO list progress for an employee
+    indicated by the given ID.
+
+    Args:
+    - employee_id (int): ID of the employee to retrieve TODO list for.
+
+    Returns:
+    - None
+    """
+    # define core url patterns
+    base_url = 'https://jsonplaceholder.typicode.com/'
+    user_info_url = f'{base_url}users/{employee_id}'
+    todo_info_url = f'{base_url}todos?userId={employee_id}'
+
+    # fetch user information
+    user_response = requests.get(user_info_url)
+    user_info = user_response.json()
+    user_name = user_info.get('name')
+
+    # fetch todo info and calculate totals
+    todo_info = requests.get(todo_info_url)
+    todo_response = todo_info.json()
+    total_todos = len(todo_response)
+    completed_todos = sum(todo.get("completed", False)
+                          for todo in todo_response)
+
+    # define output
+    print(f"Employee {user_name} is done with\
+        tasks({completed_todos}/{total_todos}):")
+
+    for todo in todo_response:
+        if todo.get('completed', False):
+            print(f"\t {todo.get('title')}")
 
 
 if __name__ == "__main__":
-    main()
+    # Checks if the correct number of command-line arguments is provided
+    if len(sys.argv) != 2:
+        print("Usage: python3 0-gather_data_from_an_API.py <employee_id>")
+        sys.exit(1)
 
-"""
+    # Extract employee ID from command-line arguments
+    employee_id = int(sys.argv[1])
 
-Employee *NAME* is done with tasks(*DONE*/*TOTAL*):
-     *TITLE*
-     *TITLE*
-     *TITLE*
-
-
-https://jsonplaceholder.typicode.com/users?id=1
-{
-  "id": 1,
-  "name": "Leanne Graham",
-  "username": "Bret",
-  "email": "Sincere@april.biz",
-  "address": {
-    "street": "Kulas Light",
-    "suite": "Apt. 556",
-    "city": "Gwenborough",
-    "zipcode": "92998-3874",
-    "geo": {
-      "lat": "-37.3159",
-      "lng": "81.1496"
-    }
-  },
-  "phone": "1-770-736-8031 x56442",
-  "website": "hildegard.org",
-  "company": {
-    "name": "Romaguera-Crona",
-    "catchPhrase": "Multi-layered client-server neural-net",
-    "bs": "harness real-time e-markets"
-  }
-}
-https://jsonplaceholder.typicode.com/todos?userId=5
-[
-  {
-    "userId": 1,
-    "id": 1,
-    "title": "delectus aut autem",
-    "completed": false
-  },
-  {
-    "userId": 1,
-    "id": 2,
-    "title": "quis ut nam facilis et officia qui",
-    "completed": false
-  },
-  ]
-
-https://jsonplaceholder.typicode.com/todos?userId=5&completed=true
-https://jsonplaceholder.typicode.com/todos?userId=5&completed=false
-  """
+    # Calling the function to get and display TODO list progress
+    fetch_todo_progress(employee_id)
